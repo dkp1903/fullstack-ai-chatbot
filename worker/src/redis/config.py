@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-import aioredis
+import redis as aioredis
 from rejson import Client
 
 

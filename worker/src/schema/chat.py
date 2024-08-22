@@ -5,6 +5,6 @@ import uuid
 
 
 class Message(BaseModel):
-    id = str(uuid.uuid4())
+    id: str = str(uuid.uuid4())
     msg: str
-    timestamp = str(datetime.now())
+    timestamp: str = str(datetime.now())

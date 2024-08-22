@@ -1,0 +1,10 @@
+fastapi
+uuid
+uvicorn
+gunicorn
+WebSockets
+python-dotenv
+redis==3.5.3
+setuptools
+rejson
+requests

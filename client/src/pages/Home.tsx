@@ -35,6 +35,7 @@ const Home = () => {
       setName(token?.data.name);
       setSessionStart(token?.data.session_start);
       setLoading(false);
+      console.log("OKOK")
       navigate(`chat/${token.data.token}`);
     } catch (error: any) {
       setLoading(false);

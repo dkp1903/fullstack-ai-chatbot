@@ -22,7 +22,7 @@ redis = Redis()
 
 
 @chat.post("/token")
-async def token_generator(name: str, request: Request):
+def token_generator(name: str, request: Request):
     token = str(uuid.uuid4())
 
     if name == "":
@@ -43,8 +43,15 @@ async def token_generator(name: str, request: Request):
     json_client.jsonset(str(token), Path.rootPath(), chat_session.dict())
 
     # Set a timeout for redis data
-    redis_client = await redis.create_connection()
-    await redis_client.expire(str(token), 3600)
+    print("star")
+    redis_client = redis.create_connection()
+    try:
+        redis_client.ping()
+        print("success")
+    except redis.exceptions.ConnectionError as e:
+            print(f"Redis connection failed: {e}")
+    print("star5", redis_client)
+    # redis_client.expire(str(token), 3600)
 
     return chat_session.dict()
 
@@ -55,10 +62,10 @@ async def token_generator(name: str, request: Request):
 
 
 @chat.get("/refresh_token")
-async def refresh_token(request: Request, token: str):
+def refresh_token(request: Request, token: str):
     json_client = redis.create_rejson_connection()
     cache = Cache(json_client)
-    data = await cache.get_chat_history(token)
+    data = cache.get_chat_history(token)
 
     if data == None:
         raise HTTPException(
@@ -74,7 +81,8 @@ async def refresh_token(request: Request, token: str):
 @chat.websocket("/chat")
 async def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_token)):
     await manager.connect(websocket)
-    redis_client = await redis.create_connection()
+    print("abc")
+    redis_client = redis.create_connection()
     producer = Producer(redis_client)
     json_client = redis.create_rejson_connection()
     consumer = StreamConsumer(redis_client)
@@ -87,7 +95,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_toke
             await producer.add_to_stream(stream_data, "message_channel")
             response = await consumer.consume_stream(stream_channel="response_channel", block=0)
 
-            print(response)
+            print("response : ", response)
             # if response:
             for stream, messages in response:
                 for message in messages:

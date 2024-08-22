@@ -12,7 +12,7 @@ const Header: React.FC<HeaderInterface> = ({
     <Fragment>
       <nav className="app-nav-container">
         <div className="app-nav">
-          <a href="https://127.0.0.1:4100">{mainTitle}</a>
+          <a href="https://3500-dkp1903-fullstackaichat-6u5b9d6144f.ws-us115.gitpod.io:4100">{mainTitle}</a>
         </div>
       </nav>
 

@@ -22,7 +22,7 @@ const ChatInput: React.FC<ChatInputProps> = (props) => {
 
   useEffect(() => {
     if (null !== ws) {
-      ws.current = new WebSocket(`ws://127.0.0.1:3500/chat?token=${token}`);
+      ws.current = new WebSocket(`https://3500-dkp1903-fullstackaichat-6u5b9d6144f.ws-us115.gitpod.io/chat?token=${token}`);
       ws.current.onopen = () => setSocketState("active");
       ws.current.onclose = () => setSocketState("");
 
