@@ -79,8 +79,8 @@ def refresh_token(request: Request, token: str):
 # @access  Public
 
 @chat.websocket("/chat")
-async def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_token)):
-    await manager.connect(websocket)
+def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_token)):
+    manager.connect(websocket)
     print("abc")
     redis_client = redis.create_connection()
     producer = Producer(redis_client)
@@ -89,11 +89,11 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_toke
 
     try:
         while True:
-            data = await websocket.receive_text()
+            data = websocket.receive_text()
             stream_data = {}
             stream_data[str(token)] = str(data)
-            await producer.add_to_stream(stream_data, "message_channel")
-            response = await consumer.consume_stream(stream_channel="response_channel", block=0)
+            producer.add_to_stream(stream_data, "message_channel")
+            response = consumer.consume_stream(stream_channel="response_channel", block=0)
 
             print("response : ", response)
             # if response:
@@ -110,9 +110,9 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_toke
                         print(token)
                         print(response_token)
 
-                        await manager.send_personal_message(response_message, websocket)
+                        manager.send_personal_message(response_message, websocket)
 
-                    await consumer.delete_message(stream_channel="response_channel", message_id=message[0].decode('utf-8'))
+                    consumer.delete_message(stream_channel="response_channel", message_id=message[0].decode('utf-8'))
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)

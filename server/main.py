@@ -23,7 +23,7 @@ api.add_middleware(
 
 
 @api.get("/test")
-async def root():
+def root():
     return {'msg": "API is Online'}
 
 

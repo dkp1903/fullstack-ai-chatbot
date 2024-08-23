@@ -144,7 +144,7 @@ load_dotenv()
 api = FastAPI()
 
 @api.get("/test")
-async def root():
+def root():
     return {"msg": "API is Online"}
 
 
@@ -182,7 +182,7 @@ chat = APIRouter()
 # @access  Public
 
 @chat.post("/token")
-async def token_generator(request: Request):
+def token_generator(request: Request):
     return None
 
 
@@ -191,7 +191,7 @@ async def token_generator(request: Request):
 # @access  Public
 
 @chat.post("/refresh_token")
-async def refresh_token(request: Request):
+def refresh_token(request: Request):
     return None
 
 
@@ -200,7 +200,7 @@ async def refresh_token(request: Request):
 # @access  Public
 
 @chat.websocket("/chat")
-async def websocket_endpoint(websocket: WebSocket = WebSocket):
+def websocket_endpoint(websocket: WebSocket = WebSocket):
     return None
 
 ```
@@ -229,7 +229,7 @@ api.include_router(chat)
 
 
 @api.get("/test")
-async def root():
+def root():
     return {"msg": "API is Online"}
 
 
@@ -258,7 +258,7 @@ import uuid
 # @access  Public
 
 @chat.post("/token")
-async def token_generator(name: str, request: Request):
+def token_generator(name: str, request: Request):
 
     if name == "":
         raise HTTPException(status_code=400, detail={
@@ -296,14 +296,14 @@ class ConnectionManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
 
-    async def connect(self, websocket: WebSocket):
+    def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.active_connections.append(websocket)
 
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
 
-    async def send_personal_message(self, message: str, websocket: WebSocket):
+    def send_personal_message(self, message: str, websocket: WebSocket):
         await websocket.send_text(message)
 
 ```
@@ -326,7 +326,7 @@ from ..socket.connection import ConnectionManager
 manager = ConnectionManager()
 
 @chat.websocket("/chat")
-async def websocket_endpoint(websocket: WebSocket):
+def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
@@ -361,7 +361,7 @@ In the socket folder, create a file named `utils.py` then add the code below:
 from fastapi import WebSocket, status, Query
 from typing import Optional
 
-async def get_token(
+def get_token(
     websocket: WebSocket,
     token: Optional[str] = Query(None),
 ):
@@ -385,7 +385,7 @@ Update the `/chat` route to the following:
 from ..socket.utils import get_token
 
 @chat.websocket("/chat")
-async def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_token)):
+def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_token)):
     await manager.connect(websocket)
     try:
         while True:
@@ -419,7 +419,7 @@ manager = ConnectionManager()
 
 
 @chat.post("/token")
-async def token_generator(name: str, request: Request):
+def token_generator(name: str, request: Request):
     token = str(uuid.uuid4())
 
     if name == "":
@@ -437,7 +437,7 @@ async def token_generator(name: str, request: Request):
 
 
 @chat.post("/refresh_token")
-async def refresh_token(request: Request):
+def refresh_token(request: Request):
     return None
 
 
@@ -446,7 +446,7 @@ async def refresh_token(request: Request):
 # @access  Public
 
 @chat.websocket("/chat")
-async def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_token)):
+def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_token)):
     await manager.connect(websocket)
     try:
         while True:
@@ -543,7 +543,7 @@ class Redis():
         self.REDIS_USER = os.environ['REDIS_USER']
         self.connection_url = f"redis://{self.REDIS_USER}:{self.REDIS_PASSWORD}@{self.REDIS_URL}"
 
-    async def create_connection(self):
+    def create_connection(self):
         self.connection = aioredis.from_url(
             self.connection_url, db=0)
 
@@ -559,7 +559,7 @@ Next, we test the Redis connection in main.py by running the code below. This wi
 from src.redis.config import Redis
 import asyncio
 
-async def main():
+def main():
     redis = Redis()
     redis = await redis.create_connection()
     print(redis)
@@ -595,7 +595,7 @@ class Redis():
         self.REDIS_USER = os.environ['REDIS_USER']
         self.connection_url = f"redis://{self.REDIS_USER}:{self.REDIS_PASSWORD}@{self.REDIS_URL}"
 
-    async def create_connection(self):
+    def create_connection(self):
         self.connection = aioredis.from_url(
             self.connection_url, db=0)
 
@@ -623,7 +623,7 @@ class Producer:
     def __init__(self, redis_client):
         self.redis_client = redis_client
 
-    async def add_to_stream(self,  data: dict, stream_channel):
+    def add_to_stream(self,  data: dict, stream_channel):
         try:
             msg_id = await self.redis_client.xadd(name=stream_channel, id="*", fields=data)
             print(f"Message id {msg_id} added to {stream_channel} stream")
@@ -651,7 +651,7 @@ redis = Redis()
 
 
 @chat.websocket("/chat")
-async def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_token)):
+def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_token)):
     await manager.connect(websocket)
     redis_client = await redis.create_connection()
     producer = Producer(redis_client)
@@ -731,7 +731,7 @@ class Redis():
         self.REDIS_HOST = os.environ['REDIS_HOST']
         self.REDIS_PORT = os.environ['REDIS_PORT']
 
-    async def create_connection(self):
+    def create_connection(self):
         self.connection = aioredis.from_url(
             self.connection_url, db=0)
 
@@ -751,7 +751,7 @@ Next, in `server.src.routes.chat.py` we can update the `/token` endpoint to crea
 
 ```py
 @chat.post("/token")
-async def token_generator(name: str, request: Request):
+def token_generator(name: str, request: Request):
     token = str(uuid.uuid4())
 
     if name == "":
@@ -797,7 +797,7 @@ The token created by `/token` will cease to exist after 60 minutes. So we can ha
 
 from ..redis.config import Redis
 
-async def get_token(
+def get_token(
     websocket: WebSocket,
     token: Optional[str] = Query(None),
 ):
@@ -845,7 +845,7 @@ redis = Redis()
 
 
 @chat.post("/token")
-async def token_generator(name: str, request: Request):
+def token_generator(name: str, request: Request):
     token = str(uuid.uuid4())
 
     if name == "":
@@ -878,7 +878,7 @@ async def token_generator(name: str, request: Request):
 
 
 @chat.post("/refresh_token")
-async def refresh_token(request: Request):
+def refresh_token(request: Request):
     return None
 
 
@@ -887,7 +887,7 @@ async def refresh_token(request: Request):
 # @access  Public
 
 @chat.websocket("/chat")
-async def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_token)):
+def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_token)):
     await manager.connect(websocket)
     redis_client = await redis.create_connection()
     producer = Producer(redis_client)
@@ -1062,7 +1062,7 @@ class Redis():
         self.REDIS_HOST = os.environ['REDIS_HOST']
         self.REDIS_PORT = os.environ['REDIS_PORT']
 
-    async def create_connection(self):
+    def create_connection(self):
         self.connection = aioredis.from_url(
             self.connection_url, db=0)
 
@@ -1098,7 +1098,7 @@ class Cache:
     def __init__(self, json_client):
         self.json_client = json_client
 
-    async def get_chat_history(self, token: str):
+    def get_chat_history(self, token: str):
         data = self.json_client.jsonget(
             str(token), Path.rootPath())
 
@@ -1118,7 +1118,7 @@ from src.redis.cache import Cache
 
 redis = Redis()
 
-async def main():
+def main():
     json_client = redis.create_rejson_connection()
     data = await Cache(json_client).get_chat_history(token="18196e23-763b-4808-ae84-064348a0daff")
     print(data)
@@ -1139,7 +1139,7 @@ Next, we need to add an `add_message_to_cache` method to our `Cache` class that 
 
 ```py
 
-  async def add_message_to_cache(self, token: str, message_data: dict):
+  def add_message_to_cache(self, token: str, message_data: dict):
       self.json_client.jsonarrappend(
           str(token), Path('.messages'), message_data)
 
@@ -1152,7 +1152,7 @@ Note that to access the message array, we need to provide `.messages` as an argu
 To test this method, update the main function in the main.py file with the code below:
 
 ```py
-async def main():
+def main():
     json_client = redis.create_rejson_connection()
 
     await Cache(json_client).add_message_to_cache(token="18196e23-763b-4808-ae84-064348a0daff", message_data={
@@ -1179,7 +1179,7 @@ First let's update our `add_message_to_cache` function with a new argument "sour
 Update the `add_message_to_cache` method in the Cache class like so:
 
 ```py
-  async def add_message_to_cache(self, token: str, source: str, message_data: dict):
+  def add_message_to_cache(self, token: str, source: str, message_data: dict):
       if source == "human":
           message_data['msg'] = "Human: " + (message_data['msg'])
       elif source == "bot":
@@ -1193,7 +1193,7 @@ Update the `add_message_to_cache` method in the Cache class like so:
 Then update the main function in main.py in the worker directory, and run `python main.py` to see the new results in the Redis database.
 
 ```py
-async def main():
+def main():
     json_client = redis.create_rejson_connection()
 
     await Cache(json_client).add_message_to_cache(token="18196e23-763b-4808-ae84-064348a0daff", source="human", message_data={
@@ -1230,7 +1230,7 @@ class Message(BaseModel):
 Next, update the main.py file like below:
 
 ```py
-async def main():
+def main():
 
     json_client = redis.create_rejson_connection()
 
@@ -1283,14 +1283,14 @@ class StreamConsumer:
     def __init__(self, redis_client):
         self.redis_client = redis_client
 
-    async def consume_stream(self, count: int, block: int,  stream_channel):
+    def consume_stream(self, count: int, block: int,  stream_channel):
 
         response = await self.redis_client.xread(
             streams={stream_channel:  '0-0'}, count=count, block=block)
 
         return response
 
-    async def delete_message(self, stream_channel, message_id):
+    def delete_message(self, stream_channel, message_id):
         await self.redis_client.xdel(stream_channel, message_id)
 
 
@@ -1315,7 +1315,7 @@ from src.schema.chat import Message
 redis = Redis()
 
 
-async def main():
+def main():
     json_client = redis.create_rejson_connection()
     redis_client = await redis.create_connection()
     consumer = StreamConsumer(redis_client)
@@ -1396,7 +1396,7 @@ class Producer:
     def __init__(self, redis_client):
         self.redis_client = redis_client
 
-    async def add_to_stream(self,  data: dict, stream_channel) -> bool:
+    def add_to_stream(self,  data: dict, stream_channel) -> bool:
         msg_id = await self.redis_client.xadd(name=stream_channel, id="*", fields=data)
         print(f"Message id {msg_id} added to {stream_channel} stream")
         return msg_id
@@ -1420,7 +1420,7 @@ from src.redis.producer import Producer
 redis = Redis()
 
 
-async def main():
+def main():
     json_client = redis.create_rejson_connection()
     redis_client = await redis.create_connection()
     consumer = StreamConsumer(redis_client)
@@ -1492,13 +1492,13 @@ class StreamConsumer:
     def __init__(self, redis_client):
         self.redis_client = redis_client
 
-    async def consume_stream(self, count: int, block: int,  stream_channel):
+    def consume_stream(self, count: int, block: int,  stream_channel):
         response = await self.redis_client.xread(
             streams={stream_channel:  '0-0'}, count=count, block=block)
 
         return response
 
-    async def delete_message(self, stream_channel, message_id):
+    def delete_message(self, stream_channel, message_id):
         await self.redis_client.xdel(stream_channel, message_id)
 
 ```
@@ -1509,7 +1509,7 @@ Next, update the `/chat` socket endpoint like so:
 from ..redis.stream import StreamConsumer
 
 @chat.websocket("/chat")
-async def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_token)):
+def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_token)):
     await manager.connect(websocket)
     redis_client = await redis.create_connection()
     producer = Producer(redis_client)
@@ -1561,7 +1561,7 @@ class Cache:
     def __init__(self, json_client):
         self.json_client = json_client
 
-    async def get_chat_history(self, token: str):
+    def get_chat_history(self, token: str):
         data = self.json_client.jsonget(
             str(token), Path.rootPath())
 
@@ -1576,7 +1576,7 @@ Next, in `server.src.routes.chat.py` import the `Cache` class and update the `/t
 from ..redis.cache import Cache
 
 @chat.get("/refresh_token")
-async def refresh_token(request: Request, token: str):
+def refresh_token(request: Request, token: str):
     json_client = redis.create_rejson_connection()
     cache = Cache(json_client)
     data = await cache.get_chat_history(token)
