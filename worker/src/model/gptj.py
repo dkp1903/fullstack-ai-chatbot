@@ -4,7 +4,7 @@ import requests
 import json
 from ..redis.config import Redis
 from ..schema.chat import Message
-
+from ..redis.producer import Producer
 
 load_dotenv()
 redis = Redis()
@@ -31,8 +31,14 @@ class GPT:
     def query(self, input: str) -> list:
         self.payload["inputs"] = f"{input} Bot:"
         data = json.dumps(self.payload)
+        print("D", data)
         response = requests.request(
-            "POST", self.url, headers=self.headers, data=data)
+                "POST", self.url, headers=self.headers, data=data)
+    
+        # Debugging Information
+        print("Response Status Code:", response.status_code)
+        print("Response Content:", response.content)
+        print("RER : ", response)
         data = json.loads(response.content.decode("utf-8"))
         print(data)
 

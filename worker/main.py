@@ -30,6 +30,7 @@ def main():
         response = consumer.consume_stream(stream_channel="message_channel", count=1, block=0)
 
         if response:
+            print("IN")
             for stream, messages in response:
                 # Get message from stream, and extract token, message data and message id
                 for message in messages:
@@ -52,9 +53,9 @@ def main():
 
                     input = ["" + i['msg'] for i in message_data]
                     input = " ".join(input)
-
+                    print("RS", input)
                     res = GPT().query(input=input)
-
+                    print("RS", res)
                     msg = Message(
                         msg=res
                     )
